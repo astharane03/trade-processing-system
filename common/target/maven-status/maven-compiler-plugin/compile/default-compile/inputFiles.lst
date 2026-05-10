@@ -1,0 +1,7 @@
+/Users/astharane/Desktop/trade-processing-system/common/src/main/java/com/trading/common/constants/KafkaTopics.java
+/Users/astharane/Desktop/trade-processing-system/common/src/main/java/com/trading/common/dto/OrderRequest.java
+/Users/astharane/Desktop/trade-processing-system/common/src/main/java/com/trading/common/dto/OrderResponse.java
+/Users/astharane/Desktop/trade-processing-system/common/src/main/java/com/trading/common/events/OrderPlacedEvent.java
+/Users/astharane/Desktop/trade-processing-system/common/src/main/java/com/trading/common/events/PortfolioUpdatedEvent.java
+/Users/astharane/Desktop/trade-processing-system/common/src/main/java/com/trading/common/events/RiskAlertEvent.java
+/Users/astharane/Desktop/trade-processing-system/common/src/main/java/com/trading/common/events/TradeExecutedEvent.java

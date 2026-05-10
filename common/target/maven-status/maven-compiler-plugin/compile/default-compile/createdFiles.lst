@@ -1,0 +1,13 @@
+com/trading/common/dto/OrderResponse.class
+com/trading/common/events/TradeExecutedEvent.class
+com/trading/common/events/OrderPlacedEvent$OrderPlacedEventBuilder.class
+com/trading/common/dto/OrderRequest$OrderRequestBuilder.class
+com/trading/common/dto/OrderRequest.class
+com/trading/common/events/OrderPlacedEvent.class
+com/trading/common/events/PortfolioUpdatedEvent$PortfolioUpdatedEventBuilder.class
+com/trading/common/dto/OrderResponse$OrderResponseBuilder.class
+com/trading/common/events/RiskAlertEvent$RiskAlertEventBuilder.class
+com/trading/common/constants/KafkaTopics.class
+com/trading/common/events/PortfolioUpdatedEvent.class
+com/trading/common/events/TradeExecutedEvent$TradeExecutedEventBuilder.class
+com/trading/common/events/RiskAlertEvent.class
