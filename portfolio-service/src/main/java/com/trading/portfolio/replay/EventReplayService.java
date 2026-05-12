@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+//if spring service crash
 @Slf4j
 @Component
 @RequiredArgsConstructor

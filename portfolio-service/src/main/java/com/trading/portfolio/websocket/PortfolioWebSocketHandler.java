@@ -35,8 +35,7 @@ public class PortfolioWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(
-            WebSocketSession session, CloseStatus status) {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         sessions.values().remove(session);
         log.info("WebSocket disconnected sessionId={}", session.getId());
     }

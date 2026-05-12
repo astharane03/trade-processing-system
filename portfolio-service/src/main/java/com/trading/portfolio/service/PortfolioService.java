@@ -117,8 +117,7 @@ public class PortfolioService {
                                 + " userId=" + userId));
 
         // lock in realized P&L
-        double realizedPnl = pnLCalculator.calculateRealizedPnL(
-                holding.getAvgCost(), price, qty);
+        double realizedPnl = pnLCalculator.calculateRealizedPnL(holding.getAvgCost(), price, qty);
 
         int newQty = holding.getQuantity() - qty;
         double unrealizedPnl = newQty > 0

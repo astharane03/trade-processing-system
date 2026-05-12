@@ -67,8 +67,7 @@ public class PortfolioController {
             @PathVariable String symbol) {
 
         log.info("Fetching P&L for userId={} symbol={}", userId, symbol);
-        List<PnLEntity> history =
-                pnLRepository.findByUserIdAndSymbol(userId, symbol);
+        List<PnLEntity> history = pnLRepository.findByUserIdAndSymbol(userId, symbol);
 
         if (history.isEmpty()) {
             return ResponseEntity.noContent().build();
