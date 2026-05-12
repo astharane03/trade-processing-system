@@ -35,13 +35,19 @@ public class OrderService {
     private final OrderEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
 
-    @Transactional
+    /*
+     * placeOrder() is the public entry point.
+     * It is NOT @Transactional itself.
+     * It calls saveOrderAndMatch() which IS @Transactional.
+     * After that transaction commits, THEN we publish to Kafka.
+     * This ensures Kafka events are never published for rolled-back DB state.
+     */
     public OrderResponse placeOrder(OrderRequest request) {
 
-        // ── Step 1: Idempotency check ──────────────────────────────────────
+        // Step 1 — idempotency check (outside transaction — Redis is not transactional)
         if (!idempotencyService.isFirstRequest(request.getIdempotencyKey())) {
-            String existingOrderId = idempotencyService.getOrderId(
-                    request.getIdempotencyKey());
+            String existingOrderId = idempotencyService
+                    .getOrderId(request.getIdempotencyKey());
             log.warn("Duplicate order rejected idempotencyKey={}",
                     request.getIdempotencyKey());
             return OrderResponse.builder()
@@ -51,10 +57,30 @@ public class OrderService {
                     .build();
         }
 
-        // ── Step 2: Create order entity ────────────────────────────────────
+        // Step 2 — DB writes inside transaction
+        OrderResult result = saveOrderAndMatch(request);
+
+        // Step 3 — Kafka publishes AFTER transaction committed
+        // If this fails, event store has the record — can be replayed later
+        publishEvents(result);
+
+        // Step 4 — mark Redis complete
+        idempotencyService.markCompleted(
+                request.getIdempotencyKey(), result.getOrderId());
+
+        return result.getResponse();
+    }
+
+    /*
+     * @Transactional here — only DB operations inside.
+     * No Kafka calls. If anything fails, DB rolls back cleanly.
+     */
+    @Transactional
+    public OrderResult saveOrderAndMatch(OrderRequest request) {
         String orderId = UUID.randomUUID().toString();
         long now = System.currentTimeMillis();
 
+        // build + save order entity
         OrderEntity orderEntity = OrderEntity.builder()
                 .orderId(orderId)
                 .idempotencyKey(request.getIdempotencyKey())
@@ -69,11 +95,9 @@ public class OrderService {
                 .createdAt(now)
                 .build();
 
-        // ── Step 3: Persist order to DB ────────────────────────────────────
         orderRepository.save(orderEntity);
-        log.info("Order saved to DB orderId={}", orderId);
 
-        // ── Step 4: Append to Event Store ──────────────────────────────────
+        // build order placed event + save to event store
         OrderPlacedEvent orderPlacedEvent = OrderPlacedEvent.builder()
                 .orderId(orderId)
                 .symbol(request.getSymbol())
@@ -87,7 +111,7 @@ public class OrderService {
 
         saveToEventStore("ORDER_PLACED", orderId, orderPlacedEvent);
 
-        // ── Step 5: Add to in-memory Order Book ────────────────────────────
+        // add to in-memory order book
         Order order = Order.builder()
                 .orderId(orderId)
                 .userId(request.getUserId())
@@ -101,37 +125,19 @@ public class OrderService {
                 .build();
 
         orderBook.addOrder(order);
-        log.info("Order added to OrderBook orderId={} side={} symbol={}",
-                orderId, request.getSide(), request.getSymbol());
 
-        // ── Step 6: Publish OrderPlaced to Kafka ───────────────────────────
-        eventPublisher.publishOrderPlaced(orderPlacedEvent);
-
-        // ── Step 7: Run Matching Engine ────────────────────────────────────
+        // run matching engine
         List<TradeExecutedEvent> trades = matchingEngine.match(request.getSymbol());
 
-        // ── Step 8: Process each trade ─────────────────────────────────────
+        // update DB for each matched trade
         for (TradeExecutedEvent trade : trades) {
-
-            // update order statuses in DB
             updateOrderStatus(trade.getBuyOrderId(), trade.getQuantity());
             updateOrderStatus(trade.getSellOrderId(), trade.getQuantity());
-
-            // append trade to event store
             saveToEventStore("TRADE_EXECUTED", trade.getTradeId(), trade);
-
-            // publish trade to Kafka
-            eventPublisher.publishTradeExecuted(trade);
-
-            log.info("Trade executed tradeId={} symbol={} qty={} price={}",
-                    trade.getTradeId(), trade.getSymbol(),
-                    trade.getQuantity(), trade.getExecutionPrice());
         }
 
-        // ── Step 9: Mark idempotency key as completed ──────────────────────
-        idempotencyService.markCompleted(request.getIdempotencyKey(), orderId);
-
-        return OrderResponse.builder()
+        // build response
+        OrderResponse response = OrderResponse.builder()
                 .orderId(orderId)
                 .status(trades.isEmpty() ? "ACCEPTED" : "MATCHED")
                 .message(trades.isEmpty()
@@ -144,6 +150,16 @@ public class OrderService {
                 .userId(request.getUserId())
                 .timestamp(now)
                 .build();
+
+        return new OrderResult(orderId, orderPlacedEvent, trades, response);
+    }
+
+    // called AFTER @Transactional saveOrderAndMatch() commits
+    private void publishEvents(OrderResult result) {
+        eventPublisher.publishOrderPlaced(result.getOrderPlacedEvent());
+        for (TradeExecutedEvent trade : result.getTrades()) {
+            eventPublisher.publishTradeExecuted(trade);
+        }
     }
 
     private void updateOrderStatus(String orderId, int matchedQty) {

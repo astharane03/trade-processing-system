@@ -9,7 +9,6 @@ import java.util.List;
 @Repository
 public interface EventStoreRepository extends JpaRepository<EventStoreEntity, Long> {
 
-    List<EventStoreEntity> findByAggregateIdOrderByCreatedAtAsc(String aggregateId);
 
     List<EventStoreEntity> findByEventTypeOrderByCreatedAtAsc(String eventType);
 }
