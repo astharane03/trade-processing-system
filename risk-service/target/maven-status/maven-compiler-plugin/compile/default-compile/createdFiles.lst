@@ -1,1 +1,8 @@
 com/trading/risk/RiskServiceApplication.class
+com/trading/risk/kafka/PortfolioUpdateConsumer.class
+com/trading/risk/api/GlobalExceptionHandler.class
+com/trading/risk/service/RiskEvaluationService.class
+com/trading/risk/service/VaRCalculator.class
+com/trading/risk/kafka/RiskAlertPublisher.class
+com/trading/risk/config/KafkaConfig.class
+com/trading/risk/api/RiskController.class

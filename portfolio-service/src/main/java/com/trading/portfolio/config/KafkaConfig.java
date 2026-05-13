@@ -75,7 +75,13 @@ public class KafkaConfig {
     public DefaultErrorHandler errorHandler() {
         // retry 3 times with 1 second gap between retries
         // after 3 failures → DeadLetterPublishingRecoverer sends to DLQ topic
-        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate());
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+                kafkaTemplate(),
+                (record, exception) -> new org.apache.kafka.common.TopicPartition(
+                        record.topic() + ".dlq",   // trades.executed.dlq  ✅
+                        0                          // partition 0 (DLQ has 1 partition)
+                )
+        );
 
         FixedBackOff backOff = new FixedBackOff(1000L, 3L);
 

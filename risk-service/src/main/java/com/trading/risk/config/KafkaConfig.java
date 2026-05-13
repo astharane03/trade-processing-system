@@ -68,8 +68,13 @@ public class KafkaConfig {
 
     @Bean
     public DefaultErrorHandler errorHandler() {
-        DeadLetterPublishingRecoverer recoverer =
-                new DeadLetterPublishingRecoverer(kafkaTemplate());
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+                        kafkaTemplate(),
+                        (record, exception) -> new org.apache.kafka.common.TopicPartition(
+                                record.topic() + ".dlq",   // trades.executed.dlq  ✅
+                                0                          // partition 0 (DLQ has 1 partition)
+                        )
+                );
         return new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
     }
 

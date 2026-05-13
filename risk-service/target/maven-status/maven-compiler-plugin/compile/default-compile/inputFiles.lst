@@ -1,1 +1,8 @@
 /Users/astharane/Desktop/trade-processing-system/risk-service/src/main/java/com/trading/risk/RiskServiceApplication.java
+/Users/astharane/Desktop/trade-processing-system/risk-service/src/main/java/com/trading/risk/api/GlobalExceptionHandler.java
+/Users/astharane/Desktop/trade-processing-system/risk-service/src/main/java/com/trading/risk/api/RiskController.java
+/Users/astharane/Desktop/trade-processing-system/risk-service/src/main/java/com/trading/risk/config/KafkaConfig.java
+/Users/astharane/Desktop/trade-processing-system/risk-service/src/main/java/com/trading/risk/kafka/PortfolioUpdateConsumer.java
+/Users/astharane/Desktop/trade-processing-system/risk-service/src/main/java/com/trading/risk/kafka/RiskAlertPublisher.java
+/Users/astharane/Desktop/trade-processing-system/risk-service/src/main/java/com/trading/risk/service/RiskEvaluationService.java
+/Users/astharane/Desktop/trade-processing-system/risk-service/src/main/java/com/trading/risk/service/VaRCalculator.java

@@ -1,1 +1,7 @@
 com/trading/notifier/NotifierServiceApplication.class
+com/trading/notifier/api/NotifierController.class
+com/trading/notifier/config/WebSocketConfig.class
+com/trading/notifier/config/KafkaConfig.class
+com/trading/notifier/api/GlobalExceptionHandler.class
+com/trading/notifier/kafka/TradeNotificationConsumer.class
+com/trading/notifier/websocket/NotificationWebSocketHandler.class

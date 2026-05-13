@@ -110,11 +110,19 @@ public class PortfolioService {
         int qty = event.getQuantity();
         double price = event.getExecutionPrice();
 
+        // FIXED: if seller has no prior holdings, start from zero
+        // This handles the case where seller is opening a short position
+        // or selling in a test scenario without prior buys
         HoldingEntity holding = holdingRepository
                 .findByUserIdAndSymbol(userId, symbol)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Seller has no holdings for symbol=" + symbol
-                                + " userId=" + userId));
+                .orElse(HoldingEntity.builder()
+                        .userId(userId)
+                        .symbol(symbol)
+                        .quantity(0)
+                        .avgCost(price)       // use execution price as cost basis
+                        .totalInvested(0.0)
+                        .unrealizedPnl(0.0)
+                        .build());
 
         // lock in realized P&L
         double realizedPnl = pnLCalculator.calculateRealizedPnL(holding.getAvgCost(), price, qty);
