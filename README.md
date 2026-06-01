@@ -117,7 +117,3 @@ Covers `OrderBook` (heap ordering, price-time priority), `MatchingEngine` (no-ma
 | `portfolio.updates.dlq` | 1 | failed events after 3 retries |
 
 `portfolio-service` and `notifier-service` use different consumer groups on `trades.executed` — Kafka delivers each trade to both independently (fan-out).
-
-## License
-
-MIT
